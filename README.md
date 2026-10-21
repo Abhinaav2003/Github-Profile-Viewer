@@ -1,6 +1,8 @@
-# GitHub Profile Stats Viewer
+﻿<h1 align="center">GitHub Profile Stats Viewer</h1>
 
-A dark-themed GitHub profile analytics dashboard built with **Java 17, Spring Boot, Thymeleaf, Bootstrap 5, and the GitHub REST API**.
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=java,spring,hibernate,postgres,maven" alt="Tech stack icons" />
+</p>
 
 ## Features
 
