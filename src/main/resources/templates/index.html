@@ -169,7 +169,7 @@
             See a developer's repositories, stars, forks, and languages in one place.
         </p>
 
-        <form class="search-form mx-auto" th:action="@{/profile}" method="get">
+        <form class="search-form mx-auto" th:action="@{/profile}" method="get"> 
             <input class="form-control search-input" type="text" name="username"
                    placeholder="GitHub username, e.g. Abhinaav2003"
                    th:value="${searchedUsername}" required maxlength="39" autocomplete="off"
@@ -181,7 +181,7 @@
 
         <div class="example-row mt-3">
             <span class="text-secondary small">Try:</span>
-            <a th:href="@{/profile(username='Abhinaav2003')}" class="example-link">Abhinaav2003</a>
+            <a th:href="@{/profile(username='Abhinaav2003')}" class="example-link">Abhinaav2003</a> 
         </div>
     </section>
 
