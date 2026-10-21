@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${profile.login} + ' | GitHub Stats'">GitHub Stats</title>
-    <link rel="icon" type="image/x-icon" href="C:\Users\abhin\Downloads\Github Profile Viewer\src\main\resources\static\assets\Abhinav Tab.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon.ico}" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Applies the saved/system theme before first paint (no flash) -->
@@ -42,19 +45,17 @@
     <style>
         :root, [data-bs-theme="light"] {
             color-scheme: light;
-            --bg: #f6f7f9; --panel: #ffffff; --panel-2: #f0f2f5; --border: #e1e5ea;
-            --text: #151a21; --muted: #5a6573;
-            --accent: #2f5bea; --accent-hover: #2449c4; --accent-text: #2449c4; --accent-contrast: #ffffff;
-            --accent-soft: rgba(47, 91, 234, .1);
-            --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+            --bg: #ffffff; --panel: #ffffff; --hover: #f4f4f5; --border: #e4e4e7;
+            --text: #18181b; --muted: #71717a;
+            --accent: #18181b; --accent-hover: #3f3f46; --accent-contrast: #ffffff;
+            --ring: rgba(24, 24, 27, .12);
         }
         [data-bs-theme="dark"] {
             color-scheme: dark;
-            --bg: #0f1318; --panel: #171c23; --panel-2: #1e242d; --border: #2a313b;
-            --text: #e8ecf1; --muted: #9aa4b2;
-            --accent: #6f8fff; --accent-hover: #8aa4ff; --accent-text: #9db3ff; --accent-contrast: #0b1020;
-            --accent-soft: rgba(111, 143, 255, .14);
-            --shadow: none;
+            --bg: #09090b; --panel: #111113; --hover: #1c1c1f; --border: #27272a;
+            --text: #fafafa; --muted: #a1a1aa;
+            --accent: #fafafa; --accent-hover: #d4d4d8; --accent-contrast: #09090b;
+            --ring: rgba(250, 250, 250, .14);
         }
 
         * { box-sizing: border-box; }
@@ -62,113 +63,104 @@
             background: var(--bg); color: var(--text);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
             -webkit-font-smoothing: antialiased;
+            min-height: 100vh; display: flex; flex-direction: column;
             transition: background-color .15s ease, color .15s ease;
         }
-        .app-bg { min-height: 100vh; background: var(--bg); }
+        main { flex: 1; }
         .text-secondary { color: var(--muted) !important; }
-        a:focus-visible, button:focus-visible, select:focus-visible {
-            outline: 2px solid var(--accent); outline-offset: 2px;
-        }
+        a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+        a { color: var(--text); }
 
-        /* Navbar */
-        .navbar { background: var(--panel); border-bottom: 1px solid var(--border); }
-        .navbar-brand { color: var(--text) !important; letter-spacing: -.3px; display: inline-flex; align-items: center; }
-        .brand-mark {
-            display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 9px;
-            border-radius: 8px; background: var(--accent); color: var(--accent-contrast);
-            font-size: 11px; font-weight: 700;
-        }
+        /* Nav */
+        .nav-bar { padding: 20px 0; }
+        .brand { color: var(--text); font-weight: 600; letter-spacing: -.2px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+        .brand-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); }
         .theme-toggle {
             display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
-            background: transparent; color: var(--muted);
-            border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+            background: transparent; color: var(--muted); border: 0; border-radius: 8px; cursor: pointer;
             transition: color .15s ease, background-color .15s ease;
         }
-        .theme-toggle:hover { color: var(--text); background: var(--panel-2); }
+        .theme-toggle:hover { color: var(--text); background: var(--hover); }
         .theme-toggle svg { width: 18px; height: 18px; }
         [data-bs-theme="dark"] .icon-moon, [data-bs-theme="light"] .icon-sun { display: none; }
-
         .btn-ghost {
             display: inline-flex; align-items: center; height: 36px; padding: 0 14px;
-            color: var(--text); background: transparent; text-decoration: none;
-            border: 1px solid var(--border); border-radius: 10px; font-size: .875rem; font-weight: 500;
+            color: var(--text); text-decoration: none; border: 1px solid var(--border);
+            border-radius: 999px; font-size: .875rem; font-weight: 500;
         }
-        .btn-ghost:hover { background: var(--panel-2); color: var(--text); }
+        .btn-ghost:hover { background: var(--hover); color: var(--text); }
 
-        .btn-primary {
-            --bs-btn-bg: var(--accent); --bs-btn-border-color: var(--accent); --bs-btn-color: var(--accent-contrast);
-            --bs-btn-hover-bg: var(--accent-hover); --bs-btn-hover-border-color: var(--accent-hover); --bs-btn-hover-color: var(--accent-contrast);
-            --bs-btn-active-bg: var(--accent-hover); --bs-btn-active-border-color: var(--accent-hover); --bs-btn-active-color: var(--accent-contrast);
-            font-weight: 600; border-radius: 10px;
+        .btn-solid {
+            display: block; text-align: center; padding: 10px 18px; border-radius: 999px; text-decoration: none;
+            background: var(--accent); color: var(--accent-contrast); font-weight: 600; font-size: .92rem;
         }
-
-        /* Panels */
-        .profile-panel, .stat-card, .section-panel {
-            background: var(--panel); border: 1px solid var(--border);
-            border-radius: 14px; box-shadow: var(--shadow);
-        }
+        .btn-solid:hover { background: var(--accent-hover); color: var(--accent-contrast); }
 
         /* Profile header */
-        .profile-panel { padding: 28px; }
-        .avatar {
-            width: 112px; height: 112px; border-radius: 20px;
-            border: 1px solid var(--border); object-fit: cover; background: var(--panel-2);
-        }
-        .profile-handle { color: var(--accent-text); text-decoration: none; }
-        .profile-handle:hover, .repo-link:hover { text-decoration: underline; }
-        .profile-meta, .repo-meta { color: var(--muted); font-size: .86rem; }
-        .profile-meta a { color: var(--accent-text); text-decoration: none; }
-        .profile-meta a:hover { text-decoration: underline; }
+        .profile-head { padding: 32px 0 36px; }
+        .avatar { width: 96px; height: 96px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; background: var(--hover); }
+        .profile-name { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 700; letter-spacing: -.03em; margin: 0; }
+        .profile-handle { color: var(--muted); text-decoration: none; }
+        .profile-handle:hover { color: var(--text); text-decoration: underline; }
+        .profile-bio { max-width: 60ch; line-height: 1.6; margin: 14px 0; }
+        .profile-meta { color: var(--muted); font-size: .88rem; }
+        .profile-meta a { color: var(--text); text-underline-offset: 3px; text-decoration-color: var(--border); }
+        .profile-meta a:hover { text-decoration-color: var(--text); }
 
-        /* Stats */
-        .stat-card { padding: 20px; height: 100%; }
-        .stat-label, .stat-note { display: block; color: var(--muted); font-size: .84rem; }
-        .stat-number { display: block; font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -.8px; margin: 8px 0 4px; }
-        .stat-note { font-size: .78rem; }
+        /* Stats: one ruled strip */
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 40px; }
+        .stat { padding: 20px 22px; }
+        .stat + .stat { border-left: 1px solid var(--border); }
+        .stat-label { display: block; color: var(--muted); font-size: .84rem; }
+        .stat-number { display: block; font-size: clamp(1.6rem, 3vw, 2rem); font-weight: 700; letter-spacing: -.04em; margin-top: 6px; }
+        .stat-note { color: var(--muted); font-size: .76rem; }
 
-        /* Repositories */
-        .section-panel { padding: 24px; }
+        /* Sections */
+        .section-title { font-size: 1.1rem; font-weight: 600; letter-spacing: -.01em; margin: 0 0 4px; }
+        .section-sub { color: var(--muted); font-size: .86rem; margin: 0; }
         .sort-form .form-select {
-            min-width: 155px; background-color: var(--panel-2); color: var(--text); border-color: var(--border);
+            min-width: 160px; border-radius: 999px; font-size: .85rem;
+            background-color: var(--panel); color: var(--text); border-color: var(--border);
         }
+        .sort-form .form-select:focus { border-color: var(--muted); box-shadow: 0 0 0 4px var(--ring); }
+
+        .repo-list { border-top: 1px solid var(--border); margin-top: 20px; }
         .repo-card { padding: 20px 0; border-bottom: 1px solid var(--border); }
-        .repo-card:first-of-type { padding-top: 8px; }
-        .repo-card:last-child { border-bottom: 0; padding-bottom: 0; }
-        .repo-link { color: var(--accent-text); text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
-        .repo-description { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+        .repo-link { color: var(--text); text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
+        .repo-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+        .repo-description { color: var(--muted); font-size: .9rem; line-height: 1.55; margin: 6px 0 12px; }
+        .repo-meta { color: var(--muted); font-size: .84rem; }
         .repo-open {
-            flex-shrink: 0; display: grid; place-items: center; width: 34px; height: 34px;
-            border: 1px solid var(--border); border-radius: 8px; color: var(--muted); text-decoration: none;
+            flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px;
+            border-radius: 50%; color: var(--muted); text-decoration: none;
         }
-        .repo-open:hover { color: var(--text); background: var(--panel-2); }
+        .repo-open:hover { color: var(--text); background: var(--hover); }
         .min-w-0 { min-width: 0; }
+        .language-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text); margin-right: 7px; }
+        .fork-tag { border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; font-size: .75rem; }
 
-        /* Languages + details */
-        .language-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 7px; }
-        .language-row { margin-top: 18px; font-size: .88rem; }
-        .language-progress { height: 6px; background: var(--panel-2); border-radius: 20px; }
-        .language-progress .progress-bar { background: var(--accent); border-radius: 20px; }
-        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
-        .detail-row:last-of-type { border-bottom: 0; }
+        .side-panel { border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+        .language-row { margin-top: 16px; font-size: .88rem; }
+        .language-progress { height: 4px; background: var(--hover); border-radius: 99px; }
+        .language-progress .progress-bar { background: var(--text); border-radius: 99px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+        .detail-row:last-of-type { border-bottom: 0; margin-bottom: 8px; }
+        .empty-state { padding: 40px 10px; text-align: center; color: var(--muted); }
 
-        .feature-icon {
-            width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px;
-            font-size: 17px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft);
-        }
-        .empty-state { padding: 35px 10px; text-align: center; }
-        .site-footer { color: var(--muted); font-size: .85rem; }
+        .site-footer { padding: 24px 0 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
 
-        @media (max-width: 576px) {
-            .profile-panel { padding: 22px; }
-            .section-panel { padding: 18px; }
+        @media (max-width: 767px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .stat:nth-child(3) { border-left: 0; }
+            .stat:nth-child(n+3) { border-top: 1px solid var(--border); }
         }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
 </head>
-<body class="app-bg">
-<nav class="navbar">
-    <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/}"><span class="brand-mark">GH</span>GitHub Stats</a>
+<body>
+<nav class="nav-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="brand" th:href="@{/}"><span class="brand-mark"></span>GitHub Stats</a>
 
         <div class="d-flex align-items-center gap-2">
             <a class="btn-ghost" th:href="@{/}">New search</a>
@@ -185,15 +177,15 @@
     </div>
 </nav>
 
-<main class="container py-5">
-    <section class="profile-panel mb-4">
+<main class="container">
+    <section class="profile-head">
         <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
             <img class="avatar" th:src="${profile.avatarUrl}" th:alt="${profile.login} + ' avatar'">
             <div class="flex-grow-1 text-center text-md-start">
-                <h1 class="h2 fw-bold mb-1" th:text="${profile.name != null and !profile.name.isBlank() ? profile.name : profile.login}">GitHub user</h1>
+                <h1 class="profile-name" th:text="${profile.name != null and !profile.name.isBlank() ? profile.name : profile.login}">GitHub user</h1>
                 <a class="profile-handle" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer"
                    th:text="'@' + ${profile.login}">@username</a>
-                <p class="text-secondary mt-3 mb-3" th:text="${profile.bio != null and !profile.bio.isBlank() ? profile.bio : 'No public bio provided.'}">Bio</p>
+                <p class="profile-bio mx-auto mx-md-0" th:text="${profile.bio != null and !profile.bio.isBlank() ? profile.bio : 'No public bio provided.'}">Bio</p>
                 <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 profile-meta">
                     <span th:if="${profile.location != null and !profile.location.isBlank()}" th:text="${profile.location}">Location</span>
                     <a th:if="${profile.blog != null and !profile.blog.isBlank()}" th:href="${profile.blog.startsWith('http') ? profile.blog : 'https://' + profile.blog}" target="_blank" rel="noopener noreferrer">Website</a>
@@ -203,48 +195,47 @@
         </div>
     </section>
 
-    <section class="row g-3 mb-4">
-        <div class="col-6 col-lg-3"><article class="stat-card"><span class="stat-label">Public repos</span><strong class="stat-number" th:text="${profile.publicRepos}">0</strong><span class="stat-note">On profile</span></article></div>
-        <div class="col-6 col-lg-3"><article class="stat-card"><span class="stat-label">Followers</span><strong class="stat-number" th:text="${profile.followers}">0</strong><span class="stat-note">Community</span></article></div>
-        <div class="col-6 col-lg-3"><article class="stat-card"><span class="stat-label">Total stars</span><strong class="stat-number" th:text="${totalStars}">0</strong><span class="stat-note">Loaded repositories</span></article></div>
-        <div class="col-6 col-lg-3"><article class="stat-card"><span class="stat-label">Total forks</span><strong class="stat-number" th:text="${totalForks}">0</strong><span class="stat-note">Loaded repositories</span></article></div>
+    <section class="stats">
+        <div class="stat"><span class="stat-label">Public repos</span><strong class="stat-number" th:text="${profile.publicRepos}">0</strong><span class="stat-note">On profile</span></div>
+        <div class="stat"><span class="stat-label">Followers</span><strong class="stat-number" th:text="${profile.followers}">0</strong><span class="stat-note">Community</span></div>
+        <div class="stat"><span class="stat-label">Total stars</span><strong class="stat-number" th:text="${totalStars}">0</strong><span class="stat-note">Loaded repositories</span></div>
+        <div class="stat"><span class="stat-label">Total forks</span><strong class="stat-number" th:text="${totalForks}">0</strong><span class="stat-note">Loaded repositories</span></div>
     </section>
 
-    <section class="row g-4">
+    <section class="row g-5 mb-5">
         <div class="col-lg-8">
-            <div class="section-panel">
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
-                    <div>
-                        <h2 class="h4 fw-bold mb-1">Repositories</h2>
-                        <p class="text-secondary small mb-0">Up to 100 public repositories, sorted by your choice.</p>
-                    </div>
-                    <form th:action="@{/profile}" method="get" class="sort-form">
-                        <input type="hidden" name="username" th:value="${profile.login}">
-                        <label class="visually-hidden" for="sort">Sort repositories</label>
-                        <select class="form-select form-select-sm" name="sort" id="sort" onchange="this.form.submit()">
-                            <option value="stars" th:selected="${sort == 'stars'}">Most stars</option>
-                            <option value="updated" th:selected="${sort == 'updated'}">Recently updated</option>
-                            <option value="name" th:selected="${sort == 'name'}">Name A–Z</option>
-                        </select>
-                    </form>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                <div>
+                    <h2 class="section-title">Repositories</h2>
+                    <p class="section-sub">Up to 100 public repositories, sorted by your choice.</p>
                 </div>
+                <form th:action="@{/profile}" method="get" class="sort-form">
+                    <input type="hidden" name="username" th:value="${profile.login}">
+                    <label class="visually-hidden" for="sort">Sort repositories</label>
+                    <select class="form-select form-select-sm" name="sort" id="sort" onchange="this.form.submit()">
+                        <option value="stars" th:selected="${sort == 'stars'}">Most stars</option>
+                        <option value="updated" th:selected="${sort == 'updated'}">Recently updated</option>
+                        <option value="name" th:selected="${sort == 'name'}">Name A–Z</option>
+                    </select>
+                </form>
+            </div>
 
+            <div class="repo-list">
                 <div th:if="${#lists.isEmpty(repositories)}" class="empty-state">
-                    <div class="feature-icon mx-auto mb-3" aria-hidden="true">⌁</div>
-                    <h3 class="h5">No public repositories found</h3>
-                    <p class="text-secondary mb-0">This profile may not have any public repositories.</p>
+                    <h3 class="h6 text-body">No public repositories found</h3>
+                    <p class="mb-0 small">This profile may not have any public repositories.</p>
                 </div>
 
                 <article class="repo-card" th:each="repo : ${repositories}">
                     <div class="d-flex justify-content-between align-items-start gap-3">
                         <div class="min-w-0">
-                            <h3 class="h6 mb-2"><a class="repo-link" th:href="${repo.htmlUrl}" target="_blank" rel="noopener noreferrer" th:text="${repo.name}">Repository</a></h3>
-                            <p class="repo-description mb-3" th:text="${repo.description != null and !repo.description.isBlank() ? repo.description : 'No description provided.'}">Description</p>
-                            <div class="d-flex flex-wrap gap-3 repo-meta">
+                            <h3 class="h6 mb-0"><a class="repo-link" th:href="${repo.htmlUrl}" target="_blank" rel="noopener noreferrer" th:text="${repo.name}">Repository</a></h3>
+                            <p class="repo-description" th:text="${repo.description != null and !repo.description.isBlank() ? repo.description : 'No description provided.'}">Description</p>
+                            <div class="d-flex flex-wrap align-items-center gap-3 repo-meta">
                                 <span th:if="${repo.language != null and !repo.language.isBlank()}"><span class="language-dot"></span><span th:text="${repo.language}">Java</span></span>
                                 <span>★ <span th:text="${repo.stars}">0</span></span>
                                 <span>⑂ <span th:text="${repo.forks}">0</span></span>
-                                <span th:if="${repo.fork}">Fork</span>
+                                <span class="fork-tag" th:if="${repo.fork}">Fork</span>
                             </div>
                         </div>
                         <a class="repo-open" th:href="${repo.htmlUrl}" target="_blank" rel="noopener noreferrer" aria-label="Open repository">↗</a>
@@ -254,9 +245,9 @@
         </div>
 
         <div class="col-lg-4">
-            <aside class="section-panel mb-4">
-                <h2 class="h5 fw-bold mb-1">Languages</h2>
-                <p class="text-secondary small mb-3">Repository count by primary language</p>
+            <aside class="side-panel mb-4">
+                <h2 class="section-title">Languages</h2>
+                <p class="section-sub">Repository count by primary language</p>
                 <div th:if="${#maps.isEmpty(languages)}" class="text-secondary small py-3">Language data is not available for these repositories.</div>
                 <div class="language-row" th:each="entry : ${languages}">
                     <div class="d-flex justify-content-between gap-2 mb-2">
@@ -270,19 +261,19 @@
                 </div>
             </aside>
 
-            <aside class="section-panel">
-                <h2 class="h5 fw-bold mb-3">Profile details</h2>
+            <aside class="side-panel">
+                <h2 class="section-title mb-2">Profile details</h2>
                 <div class="detail-row"><span class="text-secondary">Following</span><strong th:text="${profile.following}">0</strong></div>
                 <div class="detail-row"><span class="text-secondary">Public repos</span><strong th:text="${profile.publicRepos}">0</strong></div>
                 <div class="detail-row"><span class="text-secondary">Repositories loaded</span><strong th:text="${repositories.size()}">0</strong></div>
-                <a class="btn btn-primary w-100 mt-3" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">Open GitHub profile</a>
+                <a class="btn-solid mt-2" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">Open GitHub profile</a>
             </aside>
         </div>
     </section>
-
-    <footer class="site-footer text-center py-5">
-        Data supplied by the GitHub REST API. Star/fork totals reflect repositories loaded by this app.
-    </footer>
 </main>
+
+<footer class="site-footer">
+    <div class="container">Data supplied by the GitHub REST API. Star and fork totals reflect repositories loaded by this app.</div>
+</footer>
 </body>
 </html>

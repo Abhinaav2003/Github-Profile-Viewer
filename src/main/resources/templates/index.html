@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Look up any public GitHub profile and see its repositories, stars, forks, and languages.">
     <title>GitHub Stats Viewer</title>
-    <link rel="icon" type="image/x-icon" href="C:\Users\abhin\Downloads\Github Profile Viewer\src\main\resources\static\assets\Abhinav Tab.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon.ico}" href="assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Applies the saved/system theme before first paint (no flash) -->
@@ -43,19 +46,17 @@
     <style>
         :root, [data-bs-theme="light"] {
             color-scheme: light;
-            --bg: #f6f7f9; --panel: #ffffff; --panel-2: #f0f2f5; --border: #e1e5ea;
-            --text: #151a21; --muted: #5a6573;
-            --accent: #2f5bea; --accent-hover: #2449c4; --accent-text: #2449c4; --accent-contrast: #ffffff;
-            --accent-soft: rgba(47, 91, 234, .1);
-            --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+            --bg: #ffffff; --panel: #ffffff; --hover: #f4f4f5; --border: #e4e4e7;
+            --text: #18181b; --muted: #71717a;
+            --accent: #18181b; --accent-hover: #3f3f46; --accent-contrast: #ffffff;
+            --ring: rgba(24, 24, 27, .12);
         }
         [data-bs-theme="dark"] {
             color-scheme: dark;
-            --bg: #0f1318; --panel: #171c23; --panel-2: #1e242d; --border: #2a313b;
-            --text: #e8ecf1; --muted: #9aa4b2;
-            --accent: #6f8fff; --accent-hover: #8aa4ff; --accent-text: #9db3ff; --accent-contrast: #0b1020;
-            --accent-soft: rgba(111, 143, 255, .14);
-            --shadow: none;
+            --bg: #09090b; --panel: #111113; --hover: #1c1c1f; --border: #27272a;
+            --text: #fafafa; --muted: #a1a1aa;
+            --accent: #fafafa; --accent-hover: #d4d4d8; --accent-contrast: #09090b;
+            --ring: rgba(250, 250, 250, .14);
         }
 
         * { box-sizing: border-box; }
@@ -63,93 +64,74 @@
             background: var(--bg); color: var(--text);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
             -webkit-font-smoothing: antialiased;
+            min-height: 100vh; display: flex; flex-direction: column;
             transition: background-color .15s ease, color .15s ease;
         }
-        .app-bg { min-height: 100vh; background: var(--bg); }
         .text-secondary { color: var(--muted) !important; }
-        a:focus-visible, button:focus-visible, .form-control:focus-visible {
-            outline: 2px solid var(--accent); outline-offset: 2px;
-        }
+        a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
-        /* Navbar */
-        .navbar { background: var(--panel); border-bottom: 1px solid var(--border); }
-        .navbar-brand { color: var(--text) !important; letter-spacing: -.3px; display: inline-flex; align-items: center; }
-        .brand-mark {
-            display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 9px;
-            border-radius: 8px; background: var(--accent); color: var(--accent-contrast);
-            font-size: 11px; font-weight: 700;
-        }
+        /* Nav */
+        .nav-bar { padding: 20px 0; }
+        .brand { color: var(--text); font-weight: 600; letter-spacing: -.2px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+        .brand-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); }
         .theme-toggle {
             display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
-            background: transparent; color: var(--muted);
-            border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+            background: transparent; color: var(--muted); border: 0; border-radius: 8px; cursor: pointer;
             transition: color .15s ease, background-color .15s ease;
         }
-        .theme-toggle:hover { color: var(--text); background: var(--panel-2); }
+        .theme-toggle:hover { color: var(--text); background: var(--hover); }
         .theme-toggle svg { width: 18px; height: 18px; }
         [data-bs-theme="dark"] .icon-moon, [data-bs-theme="light"] .icon-sun { display: none; }
 
         /* Hero */
-        .hero-wrap { max-width: 1040px; }
-        .hero-panel { padding: 88px 0 64px; }
-        .hero-title { font-weight: 700; letter-spacing: -1.2px; line-height: 1.1; }
-        .hero-copy { max-width: 560px; color: var(--muted); }
+        main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .hero { max-width: 640px; margin: 0 auto; padding: 72px 0 96px; text-align: center; }
+        .hero-title { font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.08; margin-bottom: 16px; }
+        .hero-copy { color: var(--muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 36px; }
 
         .search-form {
-            display: flex; align-items: center; gap: 8px; max-width: 600px; padding: 6px;
-            background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-            box-shadow: var(--shadow); transition: border-color .15s ease, box-shadow .15s ease;
+            display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 18px;
+            background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+            transition: border-color .15s ease, box-shadow .15s ease;
         }
-        .search-form:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .search-form:focus-within { border-color: var(--muted); box-shadow: 0 0 0 4px var(--ring); }
         .search-input {
-            flex: 1; min-width: 0; padding: 10px 12px; font-size: 1rem;
+            flex: 1; min-width: 0; padding: 10px 4px; font-size: 1rem;
             background: transparent !important; color: var(--text) !important;
             border: 0 !important; box-shadow: none !important;
         }
         .search-input::placeholder { color: var(--muted); opacity: .8; }
-
-        .btn-primary {
-            --bs-btn-bg: var(--accent); --bs-btn-border-color: var(--accent); --bs-btn-color: var(--accent-contrast);
-            --bs-btn-hover-bg: var(--accent-hover); --bs-btn-hover-border-color: var(--accent-hover); --bs-btn-hover-color: var(--accent-contrast);
-            --bs-btn-active-bg: var(--accent-hover); --bs-btn-active-border-color: var(--accent-hover); --bs-btn-active-color: var(--accent-contrast);
-            font-weight: 600;
+        .search-button {
+            flex-shrink: 0; padding: 10px 22px; border: 0; border-radius: 999px; cursor: pointer;
+            background: var(--accent); color: var(--accent-contrast); font-weight: 600; font-size: .95rem;
+            transition: background-color .15s ease;
         }
-        .search-button { flex-shrink: 0; border-radius: 8px; padding: 10px 20px; }
-        .error-alert { max-width: 600px; text-align: left; border-radius: 10px; }
+        .search-button:hover { background: var(--accent-hover); }
 
-        .example-row { display: flex; justify-content: center; align-items: center; gap: 12px; }
-        .example-link { color: var(--accent-text); font-size: .9rem; text-decoration: none; }
-        .example-link:hover { text-decoration: underline; }
+        .error-alert { border-radius: 12px; text-align: left; }
+        .example { margin-top: 18px; font-size: .92rem; color: var(--muted); }
+        .example a { color: var(--text); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
+        .example a:hover { text-decoration-color: var(--text); }
 
         /* Features */
-        .feature-row { padding-bottom: 8px; }
-        .feature-card {
-            padding: 24px; background: var(--panel); border: 1px solid var(--border);
-            border-radius: 14px; box-shadow: var(--shadow);
-        }
-        .feature-card h2 { font-size: 1.05rem; font-weight: 600; margin: 14px 0 6px; }
-        .feature-card p { font-size: .92rem; line-height: 1.6; color: var(--muted); }
-        .feature-icon {
-            width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px;
-            font-size: 17px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft);
-        }
+        .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 28px; margin-top: 56px; color: var(--muted); font-size: .92rem; }
+        .features span::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin-right: 8px; vertical-align: middle; }
 
-        .site-footer { color: var(--muted); font-size: .85rem; }
+        .site-footer { padding: 24px 0 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
 
         @media (max-width: 576px) {
-            .hero-panel { padding: 56px 0 44px; }
-            .hero-title { font-size: 2.1rem; }
-            .search-form { flex-direction: column; align-items: stretch; }
-            .search-input { padding: 12px; }
-            .search-button { width: 100%; }
+            .hero { padding: 40px 0 64px; }
+            .search-form { flex-wrap: wrap; border-radius: 16px; padding: 6px; }
+            .search-input { flex-basis: 100%; padding: 12px; }
+            .search-button { width: 100%; border-radius: 10px; }
         }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
 </head>
-<body class="app-bg">
-<nav class="navbar">
-    <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/}"><span class="brand-mark">GH</span>GitHub Stats</a>
+<body>
+<nav class="nav-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="brand" th:href="@{/}"><span class="brand-mark"></span>GitHub Stats</a>
 
         <button type="button" id="themeToggle" class="theme-toggle" aria-label="Switch theme" title="Switch theme">
             <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -163,57 +145,36 @@
     </div>
 </nav>
 
-<main class="container hero-wrap">
-    <section class="hero-panel text-center">
-        <h1 class="display-5 hero-title mb-3">Look up any GitHub profile</h1>
-        <p class="lead hero-copy mx-auto mb-4">
-            See a developer's repositories, stars, forks, and languages in one place.
-        </p>
+<main class="container">
+    <section class="hero">
+        <h1 class="hero-title">Explore any GitHub profile</h1>
+        <p class="hero-copy">See repositories, stars, forks, and languages in one clean view.</p>
 
-        <form class="search-form mx-auto" th:action="@{/profile}" method="get"> 
+        <form class="search-form" th:action="@{/profile}" method="get">
             <input class="form-control search-input" type="text" name="username"
-                   placeholder="GitHub username, e.g. Abhinaav2003"
+                   placeholder="Enter a GitHub username"
                    th:value="${searchedUsername}" required maxlength="39" autocomplete="off"
                    aria-label="GitHub username">
-            <button class="btn btn-primary search-button" type="submit">View profile</button>
+            <button class="search-button" type="submit">View profile</button>
         </form>
 
-        <div class="alert alert-danger error-alert mx-auto mt-3" role="alert" th:if="${error}" th:text="${error}"></div>
+        <div class="alert alert-danger error-alert mt-3" role="alert" th:if="${error}" th:text="${error}"></div>
 
-        <div class="example-row mt-3">
-            <span class="text-secondary small">Try:</span>
-            <a th:href="@{/profile(username='Abhinaav2003')}" class="example-link">Abhinaav2003</a> 
+        <div class="example">Try <a th:href="@{/profile(username='Abhinaav2003')}">Abhinaav2003</a></div>
+
+        <div class="features">
+            <span>Followers and bio</span>
+            <span>Sort by stars or forks</span>
+            <span>Language breakdown</span>
         </div>
     </section>
-
-    <section class="row g-3 feature-row">
-        <div class="col-md-4">
-            <article class="feature-card h-100">
-                <div class="feature-icon" aria-hidden="true">↗</div>
-                <h2>Profile details</h2>
-                <p class="mb-0">Followers, following, public repositories, and bio.</p>
-            </article>
-        </div>
-        <div class="col-md-4">
-            <article class="feature-card h-100">
-                <div class="feature-icon" aria-hidden="true">★</div>
-                <h2>Repository stats</h2>
-                <p class="mb-0">Sort repositories by stars or forks and read their descriptions.</p>
-            </article>
-        </div>
-        <div class="col-md-4">
-            <article class="feature-card h-100">
-                <div class="feature-icon" aria-hidden="true">&lt;/&gt;</div>
-                <h2>Languages</h2>
-                <p class="mb-0">See which languages are used most across public repositories.</p>
-            </article>
-        </div>
-    </section>
-
-    <footer class="site-footer text-center py-5">
-        <div>Developed by Abhinav Tiwari</div>
-        <div>Built with Java 17, Spring Boot, and the GitHub REST API</div>
-    </footer>
 </main>
+
+<footer class="site-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>Developed by Abhinav Tiwari</span>
+        <span>Java 17 · Spring Boot · GitHub REST API</span>
+    </div>
+</footer>
 </body>
 </html>
