@@ -1,5 +1,6 @@
 package com.example.githubstats.controller;
 
+import com.example.githubstats.model.ContributionStats;
 import com.example.githubstats.model.GithubProfile;
 import com.example.githubstats.model.GithubRepository;
 import com.example.githubstats.service.GithubService;
@@ -68,6 +69,17 @@ public class GithubController {
                     .filter(language -> language != null && !language.isBlank())
                     .collect(Collectors.groupingBy(language -> language, LinkedHashMap::new, Collectors.counting()));
 
+            // Contribution data is optional: a missing token or GraphQL error must not break the page.
+            ContributionStats contributionStats = null;
+            String contributionError = null;
+            try {
+                contributionStats = githubService.getContributionStats(cleanUsername);
+            } catch (GithubServiceException ex) {
+                contributionError = ex.getMessage();
+            }
+
+            model.addAttribute("contributionStats", contributionStats);
+            model.addAttribute("contributionError", contributionError);
             model.addAttribute("profile", profile);
             model.addAttribute("repositories", repositories);
             model.addAttribute("totalStars", totalStars);

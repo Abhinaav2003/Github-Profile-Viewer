@@ -149,6 +149,60 @@
 
         .site-footer { padding: 24px 0 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
 
+
+        /* Contribution activity */
+        .contribution-section { margin: 0 0 42px; }
+        .contribution-heading, .calendar-heading {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px;
+        }
+        .contribution-heading h2, .calendar-heading h3 {
+            color: var(--text); font-weight: 600; letter-spacing: -.02em;
+        }
+        .contribution-heading h2 { font-size: 1.1rem; margin: 0 0 4px; }
+        .calendar-heading h3 { font-size: .98rem; margin: 0; }
+        .contribution-badge {
+            color: var(--muted); border: 1px solid var(--border);
+            border-radius: 999px; padding: 6px 11px; font-size: .78rem;
+        }
+        .contribution-stats {
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px; margin-top: 18px;
+        }
+        .contribution-stat, .contribution-calendar-card {
+            background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+        }
+        .contribution-stat { padding: 18px; min-width: 0; }
+        .contribution-stat .stat-label { font-size: .82rem; }
+        .contribution-stat .stat-number { font-size: clamp(1.5rem, 3vw, 2rem); }
+        .contribution-calendar-card { padding: 22px; margin-top: 14px; }
+        .contribution-calendar-scroll { overflow-x: auto; margin-top: 22px; padding: 2px 2px 8px; }
+        .contribution-calendar-grid {
+            display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px);
+            grid-auto-columns: 12px; gap: 4px; width: max-content;
+        }
+        .contribution-day, .contribution-legend-cell {
+            display: block; width: 12px; height: 12px; border-radius: 3px;
+            background: var(--hover); border: 1px solid rgba(127,127,127,.08);
+        }
+        .contribution-day[data-level="1"], .contribution-legend-cell.level-1 { background: #9be9a8; }
+        .contribution-day[data-level="2"], .contribution-legend-cell.level-2 { background: #40c463; }
+        .contribution-day[data-level="3"], .contribution-legend-cell.level-3 { background: #30a14e; }
+        .contribution-day[data-level="4"], .contribution-legend-cell.level-4 { background: #216e39; }
+        .contribution-legend {
+            display: flex; justify-content: flex-end; align-items: center; gap: 5px;
+            color: var(--muted); font-size: .75rem; margin-top: 10px;
+        }
+        .contribution-empty { color: var(--muted); font-size: .88rem; padding: 22px 0 4px; }
+        .contribution-stats.contribution-stats-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; }
+        .contribution-stat .stat-note { display: block; overflow-wrap: anywhere; }
+        @media (max-width: 767px) {
+            .contribution-stats.contribution-stats-3 { grid-template-columns: 1fr; }
+            .contribution-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .contribution-stat { padding: 15px; }
+            .contribution-calendar-card { padding: 16px; }
+        }
+
         @media (max-width: 767px) {
             .stats { grid-template-columns: repeat(2, 1fr); }
             .stat:nth-child(3) { border-left: 0; }
@@ -200,6 +254,84 @@
         <div class="stat"><span class="stat-label">Followers</span><strong class="stat-number" th:text="${profile.followers}">0</strong><span class="stat-note">Community</span></div>
         <div class="stat"><span class="stat-label">Total stars</span><strong class="stat-number" th:text="${totalStars}">0</strong><span class="stat-note">Loaded repositories</span></div>
         <div class="stat"><span class="stat-label">Total forks</span><strong class="stat-number" th:text="${totalForks}">0</strong><span class="stat-note">Loaded repositories</span></div>
+    </section>
+
+
+    <!-- Contribution activity: populated by the Spring Boot controller -->
+    <section class="contribution-section" aria-labelledby="contribution-title">
+        <div class="contribution-heading">
+            <div>
+                <h2 id="contribution-title">Contribution activity</h2>
+                <p class="section-sub">Coding consistency over the last 12 months</p>
+            </div>
+            <span class="contribution-badge">Last 12 months</span>
+        </div>
+
+        <div class="contribution-stats">
+            <div class="contribution-stat">
+                <span class="stat-label">Total contributions</span>
+                <strong class="stat-number"
+                        th:text="${contributionStats != null ? contributionStats.totalContributions : '—'}">—</strong>
+                <span class="stat-note">Past year</span>
+            </div>
+            <div class="contribution-stat">
+                <span class="stat-label">Current streak</span>
+                <strong class="stat-number"
+                        th:text="${contributionStats != null ? contributionStats.currentStreak : '—'}">—</strong>
+                <span class="stat-note"
+                      th:text="${contributionStats != null and contributionStats.currentStreak > 0 ? contributionStats.currentStreakStart + ' → ' + contributionStats.currentStreakEnd : 'No active streak'}">Consecutive days</span>
+            </div>
+            <div class="contribution-stat">
+                <span class="stat-label">Longest streak</span>
+                <strong class="stat-number"
+                        th:text="${contributionStats != null ? contributionStats.longestStreak : '—'}">—</strong>
+                <span class="stat-note"
+                      th:text="${contributionStats != null and contributionStats.longestStreak > 0 ? contributionStats.longestStreakStart + ' → ' + contributionStats.longestStreakEnd : 'No streak yet'}">Consecutive days</span>
+            </div>
+            <div class="contribution-stat">
+                <span class="stat-label">Active days</span>
+                <strong class="stat-number"
+                        th:text="${contributionStats != null ? contributionStats.activeDays : '—'}">—</strong>
+                <span class="stat-note">Days with activity</span>
+            </div>
+        </div>
+
+        <div class="contribution-calendar-card">
+            <div class="calendar-heading">
+                <h3>Contribution calendar</h3>
+                <span class="text-secondary small"
+                      th:text="${contributionStats != null ? contributionStats.totalContributions + ' contributions' : 'Contribution data unavailable'}">
+                    Contribution data unavailable
+                </span>
+            </div>
+
+            <div th:if="${contributionStats != null and !#lists.isEmpty(contributionStats.calendarDays)}"
+                 class="contribution-calendar-scroll">
+                <div class="contribution-calendar-grid">
+                    <span class="contribution-day"
+                          th:each="day : ${contributionStats.calendarDays}"
+                          th:attr="data-level=${day.level},
+                                   title=${day.date + ': ' + day.count + ' contributions'},
+                                   aria-label=${day.date + ': ' + day.count + ' contributions'}">
+                    </span>
+                </div>
+            </div>
+            <p class="contribution-empty"
+               th:if="${contributionStats == null or #lists.isEmpty(contributionStats.calendarDays)}">
+                <span th:text="${contributionError != null ? contributionError : 'Contribution data is not available for this profile.'}">Contribution data isn't available.</span>
+                <span th:if="${contributionError != null and contributionError.contains('token')}"> Set the GITHUB_API_TOKEN environment variable and restart the app.</span>
+            </p>
+
+            <div class="contribution-legend" aria-label="Contribution activity legend">
+                <span>Less</span>
+                <span class="contribution-legend-cell"></span>
+                <span class="contribution-legend-cell level-1"></span>
+                <span class="contribution-legend-cell level-2"></span>
+                <span class="contribution-legend-cell level-3"></span>
+                <span class="contribution-legend-cell level-4"></span>
+                <span>More</span>
+            </div>
+        </div>
     </section>
 
     <section class="row g-5 mb-5">

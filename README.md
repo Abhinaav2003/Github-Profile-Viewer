@@ -14,6 +14,7 @@
 - Sort repositories by stars, recently updated, or name.
 - Responsive dark interface.
 - Friendly handling of invalid usernames and GitHub API errors.
+- Contribution stats, current streak and longest streak (works without a token via the public calendar; a token uses the GraphQL API).
 - No database required.
 
 ## Technology
