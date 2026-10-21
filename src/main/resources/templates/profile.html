@@ -1,17 +1,186 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${profile.login} + ' | GitHub Stats'">GitHub Stats</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Applies the saved/system theme before first paint (no flash) -->
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+            function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+            function apply(t) {
+                root.setAttribute('data-bs-theme', t);
+                var b = document.getElementById('themeToggle');
+                if (b) {
+                    var l = t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+                    b.setAttribute('aria-label', l);
+                    b.setAttribute('title', l);
+                }
+            }
+            apply(stored() || (media && media.matches ? 'dark' : 'light'));
+            document.addEventListener('DOMContentLoaded', function () {
+                apply(root.getAttribute('data-bs-theme'));
+                var b = document.getElementById('themeToggle');
+                if (!b) return;
+                b.addEventListener('click', function () {
+                    var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    try { localStorage.setItem('theme', next); } catch (e) {}
+                    apply(next);
+                });
+            });
+            if (media && media.addEventListener) {
+                media.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+            }
+        })();
+    </script>
+
+    <style>
+        :root, [data-bs-theme="light"] {
+            color-scheme: light;
+            --bg: #f6f7f9; --panel: #ffffff; --panel-2: #f0f2f5; --border: #e1e5ea;
+            --text: #151a21; --muted: #5a6573;
+            --accent: #2f5bea; --accent-hover: #2449c4; --accent-text: #2449c4; --accent-contrast: #ffffff;
+            --accent-soft: rgba(47, 91, 234, .1);
+            --shadow: 0 1px 2px rgba(16, 24, 40, .05);
+        }
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
+            --bg: #0f1318; --panel: #171c23; --panel-2: #1e242d; --border: #2a313b;
+            --text: #e8ecf1; --muted: #9aa4b2;
+            --accent: #6f8fff; --accent-hover: #8aa4ff; --accent-text: #9db3ff; --accent-contrast: #0b1020;
+            --accent-soft: rgba(111, 143, 255, .14);
+            --shadow: none;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color .15s ease, color .15s ease;
+        }
+        .app-bg { min-height: 100vh; background: var(--bg); }
+        .text-secondary { color: var(--muted) !important; }
+        a:focus-visible, button:focus-visible, select:focus-visible {
+            outline: 2px solid var(--accent); outline-offset: 2px;
+        }
+
+        /* Navbar */
+        .navbar { background: var(--panel); border-bottom: 1px solid var(--border); }
+        .navbar-brand { color: var(--text) !important; letter-spacing: -.3px; display: inline-flex; align-items: center; }
+        .brand-mark {
+            display: inline-grid; place-items: center; width: 30px; height: 30px; margin-right: 9px;
+            border-radius: 8px; background: var(--accent); color: var(--accent-contrast);
+            font-size: 11px; font-weight: 700;
+        }
+        .theme-toggle {
+            display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+            transition: color .15s ease, background-color .15s ease;
+        }
+        .theme-toggle:hover { color: var(--text); background: var(--panel-2); }
+        .theme-toggle svg { width: 18px; height: 18px; }
+        [data-bs-theme="dark"] .icon-moon, [data-bs-theme="light"] .icon-sun { display: none; }
+
+        .btn-ghost {
+            display: inline-flex; align-items: center; height: 36px; padding: 0 14px;
+            color: var(--text); background: transparent; text-decoration: none;
+            border: 1px solid var(--border); border-radius: 10px; font-size: .875rem; font-weight: 500;
+        }
+        .btn-ghost:hover { background: var(--panel-2); color: var(--text); }
+
+        .btn-primary {
+            --bs-btn-bg: var(--accent); --bs-btn-border-color: var(--accent); --bs-btn-color: var(--accent-contrast);
+            --bs-btn-hover-bg: var(--accent-hover); --bs-btn-hover-border-color: var(--accent-hover); --bs-btn-hover-color: var(--accent-contrast);
+            --bs-btn-active-bg: var(--accent-hover); --bs-btn-active-border-color: var(--accent-hover); --bs-btn-active-color: var(--accent-contrast);
+            font-weight: 600; border-radius: 10px;
+        }
+
+        /* Panels */
+        .profile-panel, .stat-card, .section-panel {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 14px; box-shadow: var(--shadow);
+        }
+
+        /* Profile header */
+        .profile-panel { padding: 28px; }
+        .avatar {
+            width: 112px; height: 112px; border-radius: 20px;
+            border: 1px solid var(--border); object-fit: cover; background: var(--panel-2);
+        }
+        .profile-handle { color: var(--accent-text); text-decoration: none; }
+        .profile-handle:hover, .repo-link:hover { text-decoration: underline; }
+        .profile-meta, .repo-meta { color: var(--muted); font-size: .86rem; }
+        .profile-meta a { color: var(--accent-text); text-decoration: none; }
+        .profile-meta a:hover { text-decoration: underline; }
+
+        /* Stats */
+        .stat-card { padding: 20px; height: 100%; }
+        .stat-label, .stat-note { display: block; color: var(--muted); font-size: .84rem; }
+        .stat-number { display: block; font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -.8px; margin: 8px 0 4px; }
+        .stat-note { font-size: .78rem; }
+
+        /* Repositories */
+        .section-panel { padding: 24px; }
+        .sort-form .form-select {
+            min-width: 155px; background-color: var(--panel-2); color: var(--text); border-color: var(--border);
+        }
+        .repo-card { padding: 20px 0; border-bottom: 1px solid var(--border); }
+        .repo-card:first-of-type { padding-top: 8px; }
+        .repo-card:last-child { border-bottom: 0; padding-bottom: 0; }
+        .repo-link { color: var(--accent-text); text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
+        .repo-description { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+        .repo-open {
+            flex-shrink: 0; display: grid; place-items: center; width: 34px; height: 34px;
+            border: 1px solid var(--border); border-radius: 8px; color: var(--muted); text-decoration: none;
+        }
+        .repo-open:hover { color: var(--text); background: var(--panel-2); }
+        .min-w-0 { min-width: 0; }
+
+        /* Languages + details */
+        .language-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 7px; }
+        .language-row { margin-top: 18px; font-size: .88rem; }
+        .language-progress { height: 6px; background: var(--panel-2); border-radius: 20px; }
+        .language-progress .progress-bar { background: var(--accent); border-radius: 20px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+        .detail-row:last-of-type { border-bottom: 0; }
+
+        .feature-icon {
+            width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px;
+            font-size: 17px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft);
+        }
+        .empty-state { padding: 35px 10px; text-align: center; }
+        .site-footer { color: var(--muted); font-size: .85rem; }
+
+        @media (max-width: 576px) {
+            .profile-panel { padding: 22px; }
+            .section-panel { padding: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
 </head>
 <body class="app-bg">
-<nav class="navbar navbar-expand-lg navbar-dark border-bottom border-secondary-subtle">
+<nav class="navbar">
     <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/}"><span class="brand-mark">GH</span> GitHub Stats</a>
-        <a class="btn btn-outline-light btn-sm" th:href="@{/}">← New search</a>
+        <a class="navbar-brand fw-bold" th:href="@{/}"><span class="brand-mark">GH</span>GitHub Stats</a>
+
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn-ghost" th:href="@{/}">New search</a>
+            <button type="button" id="themeToggle" class="theme-toggle" aria-label="Switch theme" title="Switch theme">
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                </svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 </nav>
 
@@ -20,15 +189,14 @@
         <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
             <img class="avatar" th:src="${profile.avatarUrl}" th:alt="${profile.login} + ' avatar'">
             <div class="flex-grow-1 text-center text-md-start">
-                <div class="eyebrow mb-2">GITHUB PROFILE</div>
                 <h1 class="h2 fw-bold mb-1" th:text="${profile.name != null and !profile.name.isBlank() ? profile.name : profile.login}">GitHub user</h1>
                 <a class="profile-handle" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer"
                    th:text="'@' + ${profile.login}">@username</a>
                 <p class="text-secondary mt-3 mb-3" th:text="${profile.bio != null and !profile.bio.isBlank() ? profile.bio : 'No public bio provided.'}">Bio</p>
                 <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 profile-meta">
-                    <span th:if="${profile.location != null and !profile.location.isBlank()}">⌖ <span th:text="${profile.location}">Location</span></span>
-                    <a th:if="${profile.blog != null and !profile.blog.isBlank()}" th:href="${profile.blog.startsWith('http') ? profile.blog : 'https://' + profile.blog}" target="_blank" rel="noopener noreferrer">↗ Website</a>
-                    <a th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+                    <span th:if="${profile.location != null and !profile.location.isBlank()}" th:text="${profile.location}">Location</span>
+                    <a th:if="${profile.blog != null and !profile.blog.isBlank()}" th:href="${profile.blog.startsWith('http') ? profile.blog : 'https://' + profile.blog}" target="_blank" rel="noopener noreferrer">Website</a>
+                    <a th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">View on GitHub</a>
                 </div>
             </div>
         </div>
@@ -61,7 +229,7 @@
                 </div>
 
                 <div th:if="${#lists.isEmpty(repositories)}" class="empty-state">
-                    <div class="feature-icon purple mx-auto mb-3">⌁</div>
+                    <div class="feature-icon mx-auto mb-3" aria-hidden="true">⌁</div>
                     <h3 class="h5">No public repositories found</h3>
                     <p class="text-secondary mb-0">This profile may not have any public repositories.</p>
                 </div>
@@ -106,11 +274,12 @@
                 <div class="detail-row"><span class="text-secondary">Following</span><strong th:text="${profile.following}">0</strong></div>
                 <div class="detail-row"><span class="text-secondary">Public repos</span><strong th:text="${profile.publicRepos}">0</strong></div>
                 <div class="detail-row"><span class="text-secondary">Repositories loaded</span><strong th:text="${repositories.size()}">0</strong></div>
-                <a class="btn btn-primary w-100 mt-3" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">Open GitHub profile ↗</a>
+                <a class="btn btn-primary w-100 mt-3" th:href="${profile.htmlUrl}" target="_blank" rel="noopener noreferrer">Open GitHub profile</a>
             </aside>
         </div>
     </section>
-    <footer class="text-center text-secondary small py-5">
+
+    <footer class="site-footer text-center py-5">
         Data supplied by the GitHub REST API. Star/fork totals reflect repositories loaded by this app.
     </footer>
 </main>
