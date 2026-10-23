@@ -8,166 +8,244 @@
     <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon.ico}" href="assets/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Applies the saved/system theme before first paint (no flash) -->
     <script>
-        (function () {
-            var root = document.documentElement;
-            var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-            function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
-            function apply(t) {
-                root.setAttribute('data-bs-theme', t);
-                var b = document.getElementById('themeToggle');
-                if (b) {
-                    var l = t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
-                    b.setAttribute('aria-label', l);
-                    b.setAttribute('title', l);
-                }
-            }
-            apply(stored() || (media && media.matches ? 'dark' : 'light'));
-            document.addEventListener('DOMContentLoaded', function () {
-                apply(root.getAttribute('data-bs-theme'));
-                var b = document.getElementById('themeToggle');
-                if (!b) return;
-                b.addEventListener('click', function () {
-                    var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-                    try { localStorage.setItem('theme', next); } catch (e) {}
-                    apply(next);
-                });
-            });
-            if (media && media.addEventListener) {
-                media.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
-            }
-        })();
+/* Theme: set before first paint (load this script in <head>, synchronously). */
+(function () {
+  var root = document.documentElement;
+  var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+  function apply(t) {
+    root.setAttribute('data-bs-theme', t);
+    var b = document.getElementById('themeToggle');
+    if (b) {
+      var l = t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+      b.setAttribute('aria-label', l); b.setAttribute('title', l);
+    }
+  }
+  apply(stored() || (media && media.matches ? 'dark' : 'light'));
+
+  document.addEventListener('DOMContentLoaded', function () {
+    apply(root.getAttribute('data-bs-theme'));
+    var b = document.getElementById('themeToggle');
+    if (b) b.addEventListener('click', function () {
+      var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      apply(next);
+    });
+
+    /* Decorative contribution-style grid on the home page */
+    var g = document.getElementById('heroGrid');
+    if (g) {
+      var html = '';
+      for (var i = 0; i < 7 * 40; i++) {
+        var r = Math.random(), lv = r < .38 ? 0 : r < .62 ? 1 : r < .82 ? 2 : r < .94 ? 3 : 4;
+        html += '<span class="contribution-day" data-level="' + lv + '"></span>';
+      }
+      g.innerHTML = html;
+    }
+  });
+  if (media && media.addEventListener) {
+    media.addEventListener('change', function (e) { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
+  }
+})();
     </script>
 
     <style>
-        :root, [data-bs-theme="light"] {
-            color-scheme: light;
-            --bg: #ffffff; --panel: #ffffff; --hover: #f4f4f5; --border: #e4e4e7;
-            --text: #18181b; --muted: #71717a;
-            --accent: #18181b; --accent-hover: #3f3f46; --accent-contrast: #ffffff;
-            --ring: rgba(24, 24, 27, .12);
-        }
-        [data-bs-theme="dark"] {
-            color-scheme: dark;
-            --bg: #09090b; --panel: #111113; --hover: #1c1c1f; --border: #27272a;
-            --text: #fafafa; --muted: #a1a1aa;
-            --accent: #fafafa; --accent-hover: #d4d4d8; --accent-contrast: #09090b;
-            --ring: rgba(250, 250, 250, .14);
-        }
+:root, [data-bs-theme="light"] {
+  color-scheme: light;
+  --bg:#f5f6fa; --panel:#ffffff; --soft:#eef0f7; --border:#e2e5ee;
+  --text:#14172a; --muted:#646b84;
+  --accent:#4f46e5; --accent-hover:#4338ca; --accent-contrast:#ffffff;
+  --ring:rgba(79,70,229,.2); --cell:#e8eaf3;
+  --shadow:0 1px 2px rgba(20,23,42,.04), 0 8px 24px -12px rgba(20,23,42,.12);
+}
+[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0a0c16; --panel:#12152a; --soft:#1a1e37; --border:#252a4c;
+  --text:#f0f1fa; --muted:#9aa1c0;
+  --accent:#8b8dff; --accent-hover:#a6a8ff; --accent-contrast:#0a0c16;
+  --ring:rgba(139,141,255,.25); --cell:#1b2038;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6);
+}
 
-        * { box-sizing: border-box; }
-        body {
-            background: var(--bg); color: var(--text);
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh; display: flex; flex-direction: column;
-            transition: background-color .15s ease, color .15s ease;
-        }
-        .text-secondary { color: var(--muted) !important; }
-        a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column;
+  transition:background-color .2s ease,color .2s ease;
+}
+main{flex:1}
+h1,h2,h3,.brand,.stat-number{font-family:"Bricolage Grotesque",Inter,system-ui,sans-serif}
+a{color:var(--accent)}
+.text-secondary{color:var(--muted)!important}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-        /* Nav */
-        .nav-bar { padding: 20px 0; }
-        .brand { color: var(--text); font-weight: 600; letter-spacing: -.2px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
-        .brand-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); }
-        .theme-toggle {
-            display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
-            background: transparent; color: var(--muted); border: 0; border-radius: 8px; cursor: pointer;
-            transition: color .15s ease, background-color .15s ease;
-        }
-        .theme-toggle:hover { color: var(--text); background: var(--hover); }
-        .theme-toggle svg { width: 18px; height: 18px; }
-        [data-bs-theme="dark"] .icon-moon, [data-bs-theme="light"] .icon-sun { display: none; }
+/* Nav */
+.nav-bar{position:sticky;top:0;z-index:20;padding:14px 0;
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.brand{color:var(--text);font-weight:700;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none;display:inline-flex;align-items:center;gap:10px}
+.brand:hover{color:var(--text)}
+.brand-mark{width:24px;height:24px;border-radius:7px;background:var(--accent);
+  background-image:radial-gradient(circle at 30% 30%,rgba(255,255,255,.35) 0 18%,transparent 19%),
+  radial-gradient(circle at 70% 70%,rgba(255,255,255,.35) 0 18%,transparent 19%)}
+.theme-toggle{display:inline-grid;place-items:center;width:38px;height:38px;padding:0;background:transparent;color:var(--muted);
+  border:1px solid var(--border);border-radius:999px;cursor:pointer;transition:color .15s,background-color .15s}
+.theme-toggle:hover{color:var(--text);background:var(--soft)}
+.theme-toggle svg{width:18px;height:18px}
+[data-bs-theme="dark"] .icon-moon,[data-bs-theme="light"] .icon-sun{display:none}
+.btn-ghost{display:inline-flex;align-items:center;height:38px;padding:0 16px;color:var(--text);text-decoration:none;
+  border:1px solid var(--border);border-radius:999px;font-size:.875rem;font-weight:500;background:var(--panel)}
+.btn-ghost:hover{background:var(--soft);color:var(--text)}
+.btn-solid{display:block;text-align:center;padding:11px 18px;border-radius:12px;text-decoration:none;
+  background:var(--accent);color:var(--accent-contrast);font-weight:600;font-size:.92rem;transition:background-color .15s}
+.btn-solid:hover{background:var(--accent-hover);color:var(--accent-contrast)}
 
-        /* Hero */
-        main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .hero { max-width: 640px; margin: 0 auto; padding: 72px 0 96px; text-align: center; }
-        .hero-title { font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.08; margin-bottom: 16px; }
-        .hero-copy { color: var(--muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 36px; }
+/* Home */
+.hero{max-width:720px;margin:0 auto;padding:88px 0 40px;text-align:center}
+.hero-title{font-size:clamp(2.4rem,7vw,4.2rem);font-weight:800;letter-spacing:-.045em;line-height:1.02;margin-bottom:18px}
+.hero-copy{color:var(--muted);font-size:1.12rem;line-height:1.6;margin:0 auto 34px;max-width:46ch}
+.search-form{display:flex;align-items:center;gap:8px;padding:7px 7px 7px 20px;background:var(--panel);
+  border:1px solid var(--border);border-radius:999px;box-shadow:var(--shadow);transition:border-color .15s,box-shadow .15s}
+.search-form:focus-within{border-color:var(--accent);box-shadow:0 0 0 5px var(--ring)}
+.search-input{flex:1;min-width:0;padding:11px 4px;font-size:1.02rem;background:transparent!important;color:var(--text)!important;border:0!important;box-shadow:none!important}
+.search-input::placeholder{color:var(--muted);opacity:.85}
+.search-button{flex-shrink:0;padding:12px 26px;border:0;border-radius:999px;cursor:pointer;background:var(--accent);
+  color:var(--accent-contrast);font-weight:600;font-size:.95rem;transition:background-color .15s,transform .1s}
+.search-button:hover{background:var(--accent-hover)}
+.search-button:active{transform:scale(.97)}
+.error-alert{border-radius:14px;text-align:left}
+.example{margin-top:18px;font-size:.92rem;color:var(--muted)}
+.example a{font-weight:600;text-decoration:none;background:var(--soft);padding:3px 10px;border-radius:999px;color:var(--text)}
+.example a:hover{background:var(--ring)}
+.features{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:40px}
+.features span{background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-size:.86rem;color:var(--muted)}
+.hero-grid-wrap{overflow:hidden;padding-bottom:64px;
+  -webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent);mask-image:linear-gradient(to bottom,#000 20%,transparent)}
+#heroGrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,14px);grid-auto-columns:14px;gap:5px;width:max-content;margin:0 auto}
+#heroGrid .contribution-day{width:14px;height:14px;border-radius:4px}
 
-        .search-form {
-            display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 18px;
-            background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
-            transition: border-color .15s ease, box-shadow .15s ease;
-        }
-        .search-form:focus-within { border-color: var(--muted); box-shadow: 0 0 0 4px var(--ring); }
-        .search-input {
-            flex: 1; min-width: 0; padding: 10px 4px; font-size: 1rem;
-            background: transparent !important; color: var(--text) !important;
-            border: 0 !important; box-shadow: none !important;
-        }
-        .search-input::placeholder { color: var(--muted); opacity: .8; }
-        .search-button {
-            flex-shrink: 0; padding: 10px 22px; border: 0; border-radius: 999px; cursor: pointer;
-            background: var(--accent); color: var(--accent-contrast); font-weight: 600; font-size: .95rem;
-            transition: background-color .15s ease;
-        }
-        .search-button:hover { background: var(--accent-hover); }
+/* Profile header */
+.profile-head{margin:32px 0 24px;padding:28px;background:var(--panel);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
+.avatar{width:104px;height:104px;border-radius:28px;border:3px solid var(--panel);box-shadow:0 0 0 2px var(--accent);object-fit:cover;background:var(--soft)}
+.profile-name{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;letter-spacing:-.04em;margin:0}
+.profile-handle{color:var(--muted);text-decoration:none;font-weight:500}
+.profile-handle:hover{color:var(--accent)}
+.profile-bio{max-width:62ch;line-height:1.6;margin:12px 0}
+.profile-meta{font-size:.86rem}
+.profile-meta>*{background:var(--soft);color:var(--text);padding:5px 12px;border-radius:999px;text-decoration:none}
+.profile-meta a:hover{background:var(--ring)}
 
-        .error-alert { border-radius: 12px; text-align: left; }
-        .example { margin-top: 18px; font-size: .92rem; color: var(--muted); }
-        .example a { color: var(--text); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
-        .example a:hover { text-decoration-color: var(--text); }
+/* Stats */
+.stats,.contribution-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stats{margin-bottom:40px}
+.stat,.contribution-stat,.contribution-calendar-card,.side-panel{background:var(--panel);border:1px solid var(--border);border-radius:18px}
+.stat,.contribution-stat{padding:20px 22px;min-width:0}
+.stat-label{display:block;color:var(--muted);font-size:.84rem;font-weight:500}
+.stat-number{display:block;font-size:clamp(1.7rem,3vw,2.25rem);font-weight:700;letter-spacing:-.04em;margin-top:6px;line-height:1.1}
+.stat-note{display:block;color:var(--muted);font-size:.78rem;margin-top:2px;overflow-wrap:anywhere}
 
-        /* Features */
-        .features { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 28px; margin-top: 56px; color: var(--muted); font-size: .92rem; }
-        .features span::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin-right: 8px; vertical-align: middle; }
+/* Sections */
+.section-title{font-size:1.25rem;font-weight:700;letter-spacing:-.03em;margin:0 0 4px}
+.section-sub{color:var(--muted);font-size:.88rem;margin:0}
+.contribution-section{margin:0 0 44px}
+.contribution-heading,.calendar-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.calendar-heading h3{font-size:1rem;font-weight:600;margin:0}
+.contribution-badge{color:var(--muted);background:var(--soft);border-radius:999px;padding:6px 12px;font-size:.78rem}
+.contribution-stats{margin-top:18px}
+.contribution-calendar-card{padding:22px;margin-top:14px}
+.contribution-calendar-scroll{overflow-x:auto;margin-top:20px;padding:2px 2px 8px}
+.contribution-calendar-grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);grid-auto-columns:12px;gap:4px;width:max-content}
+.contribution-day,.contribution-legend-cell{display:block;width:12px;height:12px;border-radius:3px;background:var(--cell)}
+.contribution-day[data-level="1"],.contribution-legend-cell.level-1{background:color-mix(in srgb,var(--accent) 28%,var(--cell))}
+.contribution-day[data-level="2"],.contribution-legend-cell.level-2{background:color-mix(in srgb,var(--accent) 50%,var(--cell))}
+.contribution-day[data-level="3"],.contribution-legend-cell.level-3{background:color-mix(in srgb,var(--accent) 75%,var(--cell))}
+.contribution-day[data-level="4"],.contribution-legend-cell.level-4{background:var(--accent)}
+.contribution-legend{display:flex;justify-content:flex-end;align-items:center;gap:5px;color:var(--muted);font-size:.75rem;margin-top:10px}
+.contribution-empty{color:var(--muted);font-size:.9rem;padding:20px 0 4px}
 
-        .site-footer { padding: 24px 0 32px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+/* Repos */
+.sort-form .form-select{min-width:170px;border-radius:999px;font-size:.85rem;background-color:var(--panel);color:var(--text);border-color:var(--border)}
+.sort-form .form-select:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--ring)}
+.repo-list{display:grid;gap:12px;margin-top:20px}
+.repo-card{padding:20px 22px;background:var(--panel);border:1px solid var(--border);border-radius:18px;transition:border-color .15s,box-shadow .15s}
+.repo-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.repo-link{color:var(--text);text-decoration:none;font-weight:600;font-size:1.02rem;overflow-wrap:anywhere}
+.repo-link:hover{color:var(--accent)}
+.repo-description{color:var(--muted);font-size:.9rem;line-height:1.55;margin:6px 0 14px}
+.repo-meta{color:var(--muted);font-size:.84rem}
+.repo-open{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--muted);text-decoration:none;background:var(--soft)}
+.repo-open:hover{color:var(--accent-contrast);background:var(--accent)}
+.min-w-0{min-width:0}
+.language-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:7px}
+.fork-tag{background:var(--soft);border-radius:999px;padding:1px 9px;font-size:.75rem}
 
-        @media (max-width: 576px) {
-            .hero { padding: 40px 0 64px; }
-            .search-form { flex-wrap: wrap; border-radius: 16px; padding: 6px; }
-            .search-input { flex-basis: 100%; padding: 12px; }
-            .search-button { width: 100%; border-radius: 10px; }
-        }
-        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* Sidebar */
+.side-panel{padding:24px}
+.language-row{margin-top:16px;font-size:.88rem}
+.language-progress{height:6px;background:var(--soft);border-radius:99px}
+.language-progress .progress-bar{background:var(--accent);border-radius:99px}
+.detail-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:.9rem}
+.detail-row:last-of-type{border-bottom:0;margin-bottom:10px}
+.empty-state{padding:40px 10px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--border);border-radius:18px}
+
+.site-footer{padding:24px 0 32px;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem}
+
+@media (max-width:767px){
+  .stats,.contribution-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .profile-head{padding:22px}
+  .contribution-calendar-card{padding:16px}
+}
+@media (max-width:576px){
+  .hero{padding:48px 0 28px}
+  .search-form{flex-wrap:wrap;border-radius:20px;padding:7px}
+  .search-input{flex-basis:100%;padding:12px}
+  .search-button{width:100%;border-radius:14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
     </style>
 </head>
 <body>
 <nav class="nav-bar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="brand" th:href="@{/}"><span class="brand-mark"></span>GitHub Stats</a>
-
         <button type="button" id="themeToggle" class="theme-toggle" aria-label="Switch theme" title="Switch theme">
-            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="4"/>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-            </svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
-            </svg>
-        </button>
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            </button>
     </div>
 </nav>
 
-<main class="container">
-    <section class="hero">
-        <h1 class="hero-title">Explore any GitHub profile</h1>
-        <p class="hero-copy">See repositories, stars, forks, and languages in one clean view.</p>
+<main>
+    <div class="container">
+        <section class="hero">
+            <h1 class="hero-title">Explore any GitHub profile</h1>
+            <p class="hero-copy">See repositories, stars, forks, languages and contribution streaks in one clean view.</p>
 
-        <form class="search-form" th:action="@{/profile}" method="get">
-            <input class="form-control search-input" type="text" name="username"
-                   placeholder="Enter a GitHub username"
-                   th:value="${searchedUsername}" required maxlength="39" autocomplete="off"
-                   aria-label="GitHub username">
-            <button class="search-button" type="submit">View profile</button>
-        </form>
+            <form class="search-form" th:action="@{/profile}" method="get">
+                <input class="form-control search-input" type="text" name="username"
+                       placeholder="Enter a GitHub username"
+                       th:value="${searchedUsername}" required maxlength="39" autocomplete="off"
+                       aria-label="GitHub username">
+                <button class="search-button" type="submit">View profile</button>
+            </form>
 
-        <div class="alert alert-danger error-alert mt-3" role="alert" th:if="${error}" th:text="${error}"></div>
+            <div class="alert alert-danger error-alert mt-3" role="alert" th:if="${error}" th:text="${error}"></div>
 
-        <div class="example">Try <a th:href="@{/profile(username='Abhinaav2003')}">Abhinaav2003</a></div>
+            <div class="example">Try <a th:href="@{/profile(username='Abhinaav2003')}">Abhinaav2003</a></div>
 
-        <div class="features">
-            <span>Followers and bio</span>
-            <span>Sort by stars or forks</span>
-            <span>Language breakdown</span>
-        </div>
-    </section>
+            <div class="features">
+                <span>Followers and bio</span>
+                <span>Sort by stars or recent</span>
+                <span>Language breakdown</span>
+                <span>Contribution calendar</span>
+            </div>
+        </section>
+    </div>
+    <div class="hero-grid-wrap" aria-hidden="true"><div id="heroGrid"></div></div>
 </main>
 
 <footer class="site-footer">
